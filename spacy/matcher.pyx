@@ -442,9 +442,11 @@ def get_bilou(length):
     elif length == 9:
         return [B9_ENT, I9_ENT, I9_ENT, I9_ENT, I9_ENT, I9_ENT, I9_ENT, I9_ENT,
                 L9_ENT]
-    elif length == 10:
+    elif length <= 30:
         return [B10_ENT, I10_ENT, I10_ENT, I10_ENT, I10_ENT, I10_ENT, I10_ENT,
                 I10_ENT, I10_ENT, L10_ENT]
+    # elif length > 10:
+    #     return [U_ENT, B2_ENT, B3_ENT, B4_ENT, B5_ENT, B6_ENT, B7_ENT, B8_ENT, B9_ENT, B10_ENT, I3_ENT, I4_ENT, I5_ENT, I6_ENT, I7_ENT, I8_ENT, I9_ENT, I10_ENT, L2_ENT, L3_ENT, L4_ENT, L5_ENT, L6_ENT, L7_ENT, L8_ENT, L9_ENT, L10_ENT]
     else:
         raise ValueError(TempErrors.T001)
 
@@ -459,7 +461,7 @@ cdef class PhraseMatcher:
     cdef public object _callbacks
     cdef public object _patterns
 
-    def __init__(self, Vocab vocab, max_length=10):
+    def __init__(self, Vocab vocab, max_length=30):
         self.mem = Pool()
         self._phrase_key = <attr_t*>self.mem.alloc(max_length, sizeof(attr_t))
         self.max_length = max_length
@@ -503,16 +505,23 @@ cdef class PhraseMatcher:
         *docs (Doc): `Doc` objects representing match patterns.
         """
         cdef Doc doc
-        for doc in docs:
-            if len(doc) >= self.max_length:
-                raise ValueError(TempErrors.T002.format(doc_len=len(doc),
-                                                        max_len=self.max_length))
+        # for doc in docs:
+        #     try:
+        #         if len(doc) >= self.max_length:
+        #             raise ValueError(TempErrors.T002.format(doc_len=len(doc),
+        #                                                 max_len=self.max_length))
+        #     except Exception as e:
+        #         print(doc, e)
+            
         cdef hash_t ent_id = self.matcher._normalize_key(key)
         self._callbacks[ent_id] = on_match
         cdef int length
         cdef int i
         cdef hash_t phrase_hash
         for doc in docs:
+            if len(doc) >= self.max_length:
+                print("Skiping: ",doc," Lenght: ",len(doc))
+                continue
             length = doc.length
             tags = get_bilou(length)
             for i in range(self.max_length):
