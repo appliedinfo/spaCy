@@ -520,7 +520,7 @@ cdef class PhraseMatcher:
         cdef hash_t phrase_hash
         for doc in docs:
             if len(doc) >= self.max_length:
-                print("Skiping: ",doc," Lenght: ",len(doc))
+                print("Skipping: ",doc," Lenght: ",len(doc))
                 continue
             length = doc.length
             tags = get_bilou(length)
